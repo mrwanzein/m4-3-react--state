@@ -24,11 +24,6 @@ const SuggestionsBox = styled.div`
 const Suggestion = styled.li`
     padding: 5px;
     margin: 5px;
-    
-    &:hover {
-        background-color: lightyellow;
-        cursor: pointer;
-    }
 `;
 
 const Prediction = styled.span`
@@ -39,14 +34,21 @@ const BookGenre = styled.span`
     color: orchid;
 `;
 
-const searchBooks = (bookList, inputValue, handleSelect, categories) => {
+const searchBooks = (bookList, inputValue, handleSelect, categories, selectedState, setSelectedSuggestionIndex) => {
     return bookList.filter(books => books.title.toLowerCase().includes(inputValue.toLowerCase()))
-    .map(books => {
+    .map((books, index) => {
         let untilKeyword = books.title.slice(0, books.title.toLowerCase().indexOf(inputValue) + inputValue.length);
         let afterKeyword = books.title.slice(books.title.toLowerCase().indexOf(inputValue) + inputValue.length);
+
         return (
 
-            <Suggestion key={books.id} onClick={() => handleSelect(books.title)}>
+            <Suggestion 
+            key={books.id}
+            onClick={() => handleSelect(books.title)}
+            onMouseEnter={() => setSelectedSuggestionIndex(index)}
+            style={{background: selectedState === index ? 'hsla(50deg, 100%, 80%, 0.25)' : 'transparent'}}
+            className={`bookSearchList ${selectedState === index ? 'highlighted' : ''}`}
+            >
                 {untilKeyword}
                 <Prediction>{afterKeyword}</Prediction>
                 <i> in </i>
@@ -58,7 +60,14 @@ const searchBooks = (bookList, inputValue, handleSelect, categories) => {
 
 const Typeahead = ({suggestions, handleSelect, categories}) => {
     const [book, setBook] = React.useState("");
-    
+    const [selectedSuggestionIndex, setSelectedSuggestionIndex] = React.useState(0);
+
+    if(selectedSuggestionIndex < 0){
+        setSelectedSuggestionIndex(document.getElementsByClassName('bookSearchList').length - 1);
+    } else if(selectedSuggestionIndex > document.getElementsByClassName('bookSearchList').length) {
+        setSelectedSuggestionIndex(0)
+    }
+
     return (
         <div>
             <SearchInput 
@@ -69,16 +78,28 @@ const Typeahead = ({suggestions, handleSelect, categories}) => {
                     setBook(ev.target.value);
                 }}
 
-                onKeyUp={(ev) => {
-                    if(ev.key === 'Enter') {
-                        handleSelect(book)
+                onKeyDown={(ev) => {
+                    switch (ev.key) {
+                        case "Enter": {
+                            handleSelect(document.getElementsByClassName('highlighted')[0].textContent);
+                            return;
+                        }
+                        case "ArrowUp": {
+                                setSelectedSuggestionIndex(selectedSuggestionIndex - 1);
+                            return;
+                        }
+                        case "ArrowDown": {
+                                setSelectedSuggestionIndex(selectedSuggestionIndex + 1);
+                            return;
+                        }
+                        default:
                     }
                 }}
             />
             <ClearBtn onClick={() => setBook('')}>Clear</ClearBtn>
             <SuggestionsBox>
                 <ul>
-                    {book.length > 2 ? searchBooks(suggestions, book, handleSelect, categories) : null}
+                    {book.length > 2 && searchBooks(suggestions, book, handleSelect, categories, selectedSuggestionIndex, setSelectedSuggestionIndex)}
                 </ul>
             </SuggestionsBox>
         </div>
