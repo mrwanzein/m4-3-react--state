@@ -7,10 +7,8 @@ import booksData from '../data';
 import Typeahead from './Typeahead';
 
 const Wrapper = styled.div`
-    height: 50vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 30%;
+    margin: 40px auto 10px auto;
 `;
 
 const App = (props) => {
