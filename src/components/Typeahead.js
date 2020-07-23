@@ -31,12 +31,32 @@ const Suggestion = styled.li`
     }
 `;
 
-const searchBooks = (bookList, inputValue, handleSelect) => {
+const Prediction = styled.span`
+    font-weight: bold;
+`;
+
+const BookGenre = styled.span`
+    color: orchid;
+`;
+
+const searchBooks = (bookList, inputValue, handleSelect, categories) => {
     return bookList.filter(books => books.title.toLowerCase().includes(inputValue.toLowerCase()))
-    .map(books => <Suggestion key={books.id} onClick={() => handleSelect(books.title)}>{books.title}</Suggestion>)
+    .map(books => {
+        let untilKeyword = books.title.slice(0, books.title.toLowerCase().indexOf(inputValue) + inputValue.length);
+        let afterKeyword = books.title.slice(books.title.toLowerCase().indexOf(inputValue) + inputValue.length);
+        return (
+
+            <Suggestion key={books.id} onClick={() => handleSelect(books.title)}>
+                {untilKeyword}
+                <Prediction>{afterKeyword}</Prediction>
+                <i> in </i>
+                <BookGenre>{categories[books.categoryId].name}</BookGenre>
+            </Suggestion>
+        );
+    })
 }
 
-const Typeahead = ({suggestions, handleSelect}) => {
+const Typeahead = ({suggestions, handleSelect, categories}) => {
     const [book, setBook] = React.useState("");
     
     return (
@@ -58,7 +78,7 @@ const Typeahead = ({suggestions, handleSelect}) => {
             <ClearBtn onClick={() => setBook('')}>Clear</ClearBtn>
             <SuggestionsBox>
                 <ul>
-                    {book.length > 2 ? searchBooks(suggestions, book, handleSelect) : null}
+                    {book.length > 2 ? searchBooks(suggestions, book, handleSelect, categories) : null}
                 </ul>
             </SuggestionsBox>
         </div>
